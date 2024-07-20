@@ -1,17 +1,11 @@
 import gradio as gr
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-from llama_index.core.response_synthesizers import ResponseMode, get_response_synthesizer
 import shutil
-
-# Define el prompt inicial
-initial_prompt = "Quiero que tus respuestas tengan el tono de sherlock holmes."
 
 # Load documents and create index
 documents = SimpleDirectoryReader("data").load_data()
 index = VectorStoreIndex.from_documents(documents)
-
-# Configure response synthesizer
-response_synthesizer = get_response_synthesizer(response_mode=ResponseMode.COMPACT)
+query_engine = index.as_query_engine()
 
 def upload_file(files):
     for file in files:
@@ -21,10 +15,7 @@ def upload_file(files):
     global documents, index, query_engine
     documents = SimpleDirectoryReader("data").load_data()
     index = VectorStoreIndex.from_documents(documents)
-    query_engine = index.as_query_engine(
-        response_synthesizer=response_synthesizer,
-        prompt_template=initial_prompt
-    )
+    query_engine = index.as_query_engine()
     return "Files uploaded successfully!"
 
 def query_llama_index(user_query):
