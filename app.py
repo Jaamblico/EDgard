@@ -1,62 +1,48 @@
 import gradio as gr
-from huggingface_hub import InferenceClient
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.core.response_synthesizers import ResponseMode, get_response_synthesizer
+import shutil
 
-"""
-For more information on `huggingface_hub` Inference API support, please check the docs: https://huggingface.co/docs/huggingface_hub/v0.22.2/en/guides/inference
-"""
-client = InferenceClient("HuggingFaceH4/zephyr-7b-beta")
+# Define el prompt inicial
+initial_prompt = "Quiero que tus respuestas tengan el tono de sherlock holmes."
 
+# Load documents and create index
+documents = SimpleDirectoryReader("data").load_data()
+index = VectorStoreIndex.from_documents(documents)
 
-def respond(
-    message,
-    history: list[tuple[str, str]],
-    system_message,
-    max_tokens,
-    temperature,
-    top_p,
-):
-    messages = [{"role": "system", "content": system_message}]
+# Configure response synthesizer
+response_synthesizer = get_response_synthesizer(response_mode=ResponseMode.COMPACT)
 
-    for val in history:
-        if val[0]:
-            messages.append({"role": "user", "content": val[0]})
-        if val[1]:
-            messages.append({"role": "assistant", "content": val[1]})
+def upload_file(files):
+    for file in files:
+        shutil.copy(file, dst='./data')
+        # boto3 to upload file to s3
+    # Reindexar documentos después de subir archivos
+    global documents, index, query_engine
+    documents = SimpleDirectoryReader("data").load_data()
+    index = VectorStoreIndex.from_documents(documents)
+    query_engine = index.as_query_engine(
+        response_synthesizer=response_synthesizer,
+        prompt_template=initial_prompt
+    )
+    return "Files uploaded successfully!"
 
-    messages.append({"role": "user", "content": message})
+def query_llama_index(user_query):
+    response = query_engine.query(user_query)
+    return str(response)
 
-    response = ""
+# Crear interfaz de Gradio
+with gr.Blocks() as demo:
+    gr.Markdown("## File Upload Interface")
+    upload_button = gr.UploadButton("Click to Upload a File", file_types=["csv", "pdf", "txt", "docx", "json"], file_count="multiple")
+    file_output = gr.Textbox(label="File Upload Status")
+    upload_button.upload(upload_file, upload_button, file_output)
 
-    for message in client.chat_completion(
-        messages,
-        max_tokens=max_tokens,
-        stream=True,
-        temperature=temperature,
-        top_p=top_p,
-    ):
-        token = message.choices[0].delta.content
-
-        response += token
-        yield response
-
-"""
-For information on how to customize the ChatInterface, peruse the gradio docs: https://www.gradio.app/docs/chatinterface
-"""
-demo = gr.ChatInterface(
-    respond,
-    additional_inputs=[
-        gr.Textbox(value="You are a friendly Chatbot.", label="System message"),
-        gr.Slider(minimum=1, maximum=2048, value=512, step=1, label="Max new tokens"),
-        gr.Slider(minimum=0.1, maximum=4.0, value=0.7, step=0.1, label="Temperature"),
-        gr.Slider(
-            minimum=0.1,
-            maximum=1.0,
-            value=0.95,
-            step=0.05,
-            label="Top-p (nucleus sampling)",
-        ),
-    ],
-)
+    gr.Markdown("## Query Interface")
+    query_input = gr.Textbox(lines=2, placeholder="Ingrese su pregunta aquí..")
+    query_output = gr.Textbox(label="Respuesta")
+    query_button = gr.Button("Query")
+    query_button.click(query_llama_index, inputs=query_input, outputs=query_output)
 
 
 if __name__ == "__main__":
