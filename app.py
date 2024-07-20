@@ -3,6 +3,17 @@ from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.response_synthesizers import ResponseMode, get_response_synthesizer
 import shutil
 
+js_func = """
+function refresh() {
+    const url = new URL(window.location);
+
+    if (url.searchParams.get('__theme') !== 'dark') {
+        url.searchParams.set('__theme', 'dark');
+        window.location.href = url.href;
+    }
+}
+"""
+
 # Define el prompt inicial
 initial_prompt = (
     "Sos un asistente servicial especializado en proveer respuestas detalladas y precisas "
@@ -44,7 +55,7 @@ def respond(user_message, history):
     return history, "", history
 
 # Crear interfaz de Gradio
-with gr.Blocks(theme="dark") as demo:
+with gr.Blocks(js=js_func) as demo:
     gr.Markdown("## File Upload Interface")
     upload_button = gr.UploadButton("Click to Upload a File", file_types=["csv", "pdf", "txt", "docx", "json"], file_count="multiple")
     file_output = gr.Textbox(label="File Upload Status")
