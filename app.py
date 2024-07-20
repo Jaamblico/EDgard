@@ -5,9 +5,10 @@ import shutil
 
 # Define el prompt inicial
 initial_prompt = (
-    "You are a helpful assistant specialized in providing detailed and accurate "
-    "answers based on the following documents. Make sure to cite relevant sources "
-    "from the documents and provide comprehensive explanations."
+    "Sos un asistente servicial especializado en proveer respuestas detalladas y precisas "
+    "basadas en los siguientes documentos. Asegurate de citar fuentes relevantes "
+    "desde los documentos y proveer explicaciones entendibles. "
+    "Siempre responde en español. "
 )
 # Load documents and create index
 documents = SimpleDirectoryReader("data").load_data()
