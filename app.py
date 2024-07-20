@@ -32,23 +32,31 @@ def upload_file(files):
     )
     return "Files uploaded successfully!"
 
-def query_llama_index(user_query):
-    response = query_engine.query(user_query)
-    return str(response)
+def respond(user_message, history):
+    messages = [{"role": "system", "content": initial_prompt}]
+    for user_msg, bot_msg in history:
+        messages.append({"role": "user", "content": user_msg})
+        if bot_msg:
+            messages.append({"role": "assistant", "content": bot_msg})
+    messages.append({"role": "user", "content": user_message})
+    response = query_engine.query(user_message)
+    history.append((user_message, str(response)))
+    return history, "", history
 
 # Crear interfaz de Gradio
-with gr.Blocks() as demo:
+with gr.Blocks(theme="dark") as demo:
     gr.Markdown("## File Upload Interface")
     upload_button = gr.UploadButton("Click to Upload a File", file_types=["csv", "pdf", "txt", "docx", "json"], file_count="multiple")
     file_output = gr.Textbox(label="File Upload Status")
     upload_button.upload(upload_file, upload_button, file_output)
 
     gr.Markdown("## Query Interface")
-    query_input = gr.Textbox(lines=2, placeholder="Ingrese su pregunta aquí..")
-    query_output = gr.Textbox(label="Respuesta")
-    query_button = gr.Button("Query")
-    query_button.click(query_llama_index, inputs=query_input, outputs=query_output)
-
+    chatbot = gr.Chatbot()
+    query_input = gr.Textbox(placeholder="Ingrese su pregunta aquí...", show_label=False)
+    state = gr.State([])
+    query_input.submit(respond, inputs=[query_input, state], outputs=[chatbot, query_input, state])
+    send_button = gr.Button("Enviar")
+    send_button.click(respond, inputs=[query_input, state], outputs=[chatbot, query_input, state])
 
 if __name__ == "__main__":
     demo.launch()
