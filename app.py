@@ -1,11 +1,21 @@
 import gradio as gr
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from llama_index.core.response_synthesizers import ResponseMode, get_response_synthesizer
 import shutil
 
+# Define el prompt inicial
+initial_prompt = (
+    "You are a helpful assistant specialized in providing detailed and accurate "
+    "answers based on the following documents. Make sure to cite relevant sources "
+    "from the documents and provide comprehensive explanations."
+)
 # Load documents and create index
 documents = SimpleDirectoryReader("data").load_data()
 index = VectorStoreIndex.from_documents(documents)
 query_engine = index.as_query_engine()
+
+# Configure response synthesizer
+response_synthesizer = get_response_synthesizer(response_mode=ResponseMode.REFINE)
 
 def upload_file(files):
     for file in files:
@@ -15,7 +25,10 @@ def upload_file(files):
     global documents, index, query_engine
     documents = SimpleDirectoryReader("data").load_data()
     index = VectorStoreIndex.from_documents(documents)
-    query_engine = index.as_query_engine()
+    query_engine = index.as_query_engine(
+        response_synthesizer=response_synthesizer,
+        prompt_template=initial_prompt
+    )
     return "Files uploaded successfully!"
 
 def query_llama_index(user_query):
