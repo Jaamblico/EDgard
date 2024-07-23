@@ -1,3 +1,4 @@
+
 import gradio as gr
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.core.response_synthesizers import ResponseMode, get_response_synthesizer
@@ -9,6 +10,7 @@ initial_prompt = "Quiero que tus respuestas tengan el tono de sherlock holmes."
 # Load documents and create index
 documents = SimpleDirectoryReader("data").load_data()
 index = VectorStoreIndex.from_documents(documents)
+query_engine = index.as_query_engine()
 
 # Configure response synthesizer
 response_synthesizer = get_response_synthesizer(response_mode=ResponseMode.COMPACT)
