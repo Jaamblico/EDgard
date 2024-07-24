@@ -1,2 +1,2 @@
-gradio
 llama-index
+gradio
