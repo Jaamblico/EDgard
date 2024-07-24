@@ -1,19 +1,17 @@
----
-title: EDgar TEST
-emoji: 💬
-colorFrom: yellow
-colorTo: purple
-sdk: gradio
-sdk_version: 4.36.1
-app_file: src/app.py
-pinned: false
-license: mit
----
+# EDgard
+RAG with OpenAI API, Llama-Index and Gradio interface for retrieving centralized databases.
 
-An example chatbot using [Gradio](https://gradio.app), [`huggingface_hub`](https://huggingface.co/docs/huggingface_hub/v0.22.2/en/index), and the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index).
+### Technologies being used
+* [OpenAI API](https://platform.openai.com/)
+* [Gradio](https://gradio.app)
+* [Llama-Index](https://llamaindex.ai/)
 
-## Instrucciones para Configurar y Ejecutar
+### Instalar las dependencias
+```sh
+pip install -r requirements.txt
+```
 
-1. Instala las dependencias:
-   ```sh
-   pip install -r requirements.txt
+### Ejecutar proyecto
+```sh
+python src/app.py
+```
