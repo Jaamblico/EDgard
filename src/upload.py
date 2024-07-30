@@ -1,13 +1,11 @@
 import shutil
+import shutil
+from respond import initialize_chat_engine
+import os
 
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
 
-
-def upload_file(files):
-    for file in files:
-        shutil.copy(file, dst="./data")
-    global documents, index, query_engine
-    # Load documents and create index
-    documents = SimpleDirectoryReader("./data").load_data()
-    index = VectorStoreIndex.from_documents(documents)
-    return "Archivo subido correctamente."
+def upload_file(file_path):
+    destination = f"./data/{os.path.basename(file_path)}"
+    shutil.copy(file_path, destination)
+    initialize_chat_engine()
+    return destination

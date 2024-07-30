@@ -1,2 +1,5 @@
 llama-index
 gradio
+docx2txt
+openpyxl
+xlrd

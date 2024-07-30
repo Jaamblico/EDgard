@@ -1,33 +1,55 @@
 import gradio as gr
-from respond import respondFn
+from respond import respondFn, initialize_chat_engine
 from upload import upload_file
 from utils import js_func
+import os
 
-# Crear interfaz de Gradio
-with gr.Blocks(js=js_func) as demo:
-    gr.Markdown("## Subir archivos")
-    upload_button = gr.UploadButton(
-        "Seleccionar archivos",
-        file_types=["csv", "pdf", "txt", "doc", "docx", "json", "xls", "xlsx"],
-        file_count="multiple",
-    )
-    file_output = gr.Textbox(label="Estado de carga:")
-    upload_button.upload(upload_file, upload_button, file_output)
-
-    gr.Markdown("## Query Interface")
-    chatbot = gr.Chatbot()
-    query_input = gr.Textbox(
-        placeholder="Ingrese su pregunta aquí...", show_label=False
-    )
-    state = gr.State([])
-    query_input.submit(
-        respondFn, inputs=[query_input, state], outputs=[chatbot, query_input, state]
-    )
-    send_button = gr.Button("Enviar")
-    send_button.click(
-        respondFn, inputs=[query_input, state], outputs=[chatbot, query_input, state]
-    )
+initialize_chat_engine()
 
 
+def print_like_dislike(x: gr.LikeData):
+    print(x.index, x.value, x.liked)
+
+
+def handle_text_and_file(history, chatInput):
+    if history is None:
+        history = []
+
+    files = chatInput.get("files", [])
+    text = chatInput.get("text", "")
+
+    for file_path in files:
+        file_url = upload_file(file_path)
+        file_name = os.path.basename(file_url)
+        file_link = f"<a href='{file_url}' download>{file_name}</a>"
+        history.append([file_link, None])
+
+    if text:
+        history.append([text, None])
+        history = respondFn(history)
+
+    return history, {"text": "", "files": None}
+
+
+with gr.Blocks(js=js_func, fill_height=True) as demo:
+    chatbot = gr.Chatbot(
+        elem_id="chatbot",
+        bubble_full_width=False,
+        scale=1,
+    )
+    chat_input = gr.MultimodalTextbox(
+        interactive=True,
+        placeholder="Ingrese su mensaje o suba un archivo...",
+        show_label=False,
+    )
+    chat_input.submit(
+        handle_text_and_file,
+        [chatbot, chat_input],
+        [chatbot, chat_input],
+    )
+
+    chatbot.like(print_like_dislike, None, None)
+
+demo.queue()
 if __name__ == "__main__":
     demo.launch()
