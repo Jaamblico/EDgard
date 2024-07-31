@@ -3,3 +3,5 @@ gradio
 docx2txt
 openpyxl
 xlrd
+boto3
+python-dotenv
