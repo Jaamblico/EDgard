@@ -19,8 +19,7 @@ def handle_text_and_file(history, chatInput):
     text = chatInput.get("text", "")
 
     for file_path in files:
-        file_url = upload_file(file_path)
-        file_name = os.path.basename(file_url)
+        file_url, file_name = upload_file(file_path)
         file_link = f"<a href='{file_url}' download>{file_name}</a>"
         history.append([file_link, None])
 

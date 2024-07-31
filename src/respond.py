@@ -25,7 +25,7 @@ def initialize_chat_engine():
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    if os.listdir(folder):  # Only load documents if there are files in the folder
+    if os.listdir(folder):
         documents = SimpleDirectoryReader(folder).load_data()
     else:
         print(
@@ -51,8 +51,8 @@ def respondFn(history):
     if not history:
         return history
 
-    user_message = history[-1][0]  # Last user message
-    response = chat_engine.chat(user_message)  # Directly pass the user message
+    user_message = history[-1][0]
+    response = chat_engine.chat(user_message)
 
-    history[-1][1] = str(response)  # Append the response to the last user message
+    history[-1][1] = str(response)
     return history
