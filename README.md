@@ -1,4 +1,4 @@
-# EDgard
+# EDga
 RAG with OpenAI API, Llama-Index and Gradio interface for retrieving centralized databases.
 
 ### Technologies being used
